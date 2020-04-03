@@ -1,0 +1,55 @@
+import java.io.*;
+import java.io.InputStreamReader;
+import java.io.BufferedReader;
+import java.io.PrintStream;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
+import java.util.Scanner;
+
+
+public class Client {
+
+    private static BufferedReader input_stream = null;
+    private static PrintWriter output = null;
+
+
+    public static void main(String[] args) {
+        // The default port.
+        int portNumber = 5000;
+
+        if (args.length < 2) {
+            System.out.println("Usage: java User <host> <portNumber>\n"
+                    + "Now using host= yejin.com, portNumber=" + portNumber);
+        }
+        /*
+         * Open a socket on a given host and port. Open input and output streams.
+         */
+        try (Socket socket = new Socket("localhost", 5000)) {
+
+            socket.setSoTimeout(5000);
+            input_stream = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            output = new PrintWriter(socket.getOutputStream(), true);
+
+            Scanner scanner = new Scanner(System.in);
+            String echo;
+            String response;
+
+            do {
+                System.out.println("write something to be echoed: ");
+                echo = scanner.nextLine();
+
+                output.println(echo);
+                if (!echo.equals("exit")) {
+                    response = input_stream.readLine();
+                    System.out.println(response);
+                }
+            } while (!echo.equals("exit"));
+        } catch(SocketTimeoutException e) {
+            System.out.println("Timeout occurred");
+        } catch (IOException e) {
+            System.out.println("Couldn't get I/O for the connection to the host");
+
+        }
+    }
+}
